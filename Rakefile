@@ -23,13 +23,13 @@ CC      = "#{ARDUINO}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/arm-none
 CXX     = "#{ARDUINO}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/arm-none-eabi-g++"
 OBJCOPY = "#{ARDUINO}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/arm-none-eabi-objcopy"
 
-C_SRCS = ['hardware/arduino/sam/cores/arduino/cortex_handlers.c', 'hardware/arduino/sam/cores/arduino/hooks.c', 'hardware/arduino/sam/cores/arduino/itoa.c', 'hardware/arduino/sam/cores/arduino/WInterrupts.c', 'hardware/arduino/sam/cores/arduino/wiring.c', 'hardware/arduino/sam/cores/arduino/wiring_analog.c', 'hardware/arduino/sam/cores/arduino/wiring_digital.c', 'hardware/arduino/sam/cores/arduino/wiring_shift.c', 'hardware/arduino/sam/cores/arduino/iar_calls_sam3.c', 'hardware/arduino/sam/cores/arduino/syscalls_sam3.c'] + USR_C_SRCS
+C_SRCS = ['hardware/arduino/sam/cores/arduino/cortex_handlers.c', 'hardware/arduino/sam/cores/arduino/hooks.c', 'hardware/arduino/sam/cores/arduino/itoa.c', 'hardware/arduino/sam/cores/arduino/WInterrupts.c', 'hardware/arduino/sam/cores/arduino/wiring.c', 'hardware/arduino/sam/cores/arduino/wiring_analog.c', 'hardware/arduino/sam/cores/arduino/wiring_digital.c', 'hardware/arduino/sam/cores/arduino/wiring_shift.c', 'hardware/arduino/sam/cores/arduino/iar_calls_sam3.c', 'hardware/arduino/sam/cores/arduino/syscalls_sam3.c'].map { |x| "#{ARDUINO}/#{x}" } + USR_C_SRCS
 
-CPP_SRCS = ['hardware/arduino/sam/cores/arduino/cxxabi-compat.cpp', 'hardware/arduino/sam/cores/arduino/IPAddress.cpp', 'hardware/arduino/sam/cores/arduino/Print.cpp', 'hardware/arduino/sam/cores/arduino/Reset.cpp', 'hardware/arduino/sam/cores/arduino/RingBuffer.cpp', 'hardware/arduino/sam/cores/arduino/Stream.cpp', 'hardware/arduino/sam/cores/arduino/UARTClass.cpp', 'hardware/arduino/sam/cores/arduino/USARTClass.cpp', 'hardware/arduino/sam/cores/arduino/USB/CDC.cpp', 'hardware/arduino/sam/cores/arduino/USB/HID.cpp', 'hardware/arduino/sam/cores/arduino/USB/USBCore.cpp', 'hardware/arduino/sam/cores/arduino/wiring_pulse.cpp', 'hardware/arduino/sam/cores/arduino/WMath.cpp', 'hardware/arduino/sam/cores/arduino/WString.cpp', 'hardware/arduino/sam/variants/arduino_due_x/variant.cpp'] + USR_CPP_SRCS
+CPP_SRCS = ['hardware/arduino/sam/cores/arduino/abi.cpp', 'hardware/arduino/sam/cores/arduino/IPAddress.cpp', 'hardware/arduino/sam/cores/arduino/Print.cpp', 'hardware/arduino/sam/cores/arduino/Reset.cpp', 'hardware/arduino/sam/cores/arduino/RingBuffer.cpp', 'hardware/arduino/sam/cores/arduino/Stream.cpp', 'hardware/arduino/sam/cores/arduino/UARTClass.cpp', 'hardware/arduino/sam/cores/arduino/USARTClass.cpp', 'hardware/arduino/sam/cores/arduino/USB/CDC.cpp', 'hardware/arduino/sam/cores/arduino/USB/HID.cpp', 'hardware/arduino/sam/cores/arduino/USB/USBCore.cpp', 'hardware/arduino/sam/cores/arduino/wiring_pulse.cpp', 'hardware/arduino/sam/cores/arduino/WMath.cpp', 'hardware/arduino/sam/cores/arduino/WString.cpp', 'hardware/arduino/sam/variants/arduino_due_x/variant.cpp'].map {  |x| "#{ARDUINO}/#{x}" } + USR_CPP_SRCS
 
 INCLUDES = ['hardware/arduino/sam/system/libsam', 'hardware/arduino/sam/system/CMSIS/CMSIS/Include',
 'hardware/arduino/sam/cores/arduino',
-'hardware/arduino/sam/system/CMSIS/Device/ATMEL', 'hardware/arduino/sam/variants/arduino_due_x'] + USR_INCLUDES
+'hardware/arduino/sam/system/CMSIS/Device/ATMEL', 'hardware/arduino/sam/variants/arduino_due_x'].map { |x| "#{ARDUINO}/#{x}" } + USR_INCLUDES
 
 @cflags = '-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -Dprintf=iprintf -mcpu=cortex-m3 -DF_CPU=84000000L -DARDUINO=155 -DARDUINO_SAM_DUE -DARDUINO_ARCH_SAM -D__SAM3X8E__ -mthumb -DUSB_VID=0x2341 -DUSB_PID=0x003e -DUSBCON ' + INCLUDES.map { |x| "-I#{x}" }.join(' ')
 
@@ -64,7 +64,7 @@ task :flash => :core do
     require 'SerialPort'
     SerialPort.open("/dev/#{PORT}", 1200) {|sp| puts "Reset Board" }
   end
-  sh "#{ARDUINO}/hardware/tools/bossac --port=#{PORT} -U false -e -w -v -b output/core.bin -R"
+  sh "#{ARDUINO}/hardware/tools/bossac -U false -e -w -v -b output/core.bin -R"
 end
 
 directory 'output'
