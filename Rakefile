@@ -1,6 +1,6 @@
-ARDUINO = '/Applications/Arduino\\ 1.5.7.app/Contents/Resources/Java'
+ARDUINO = '/Applications/Arduino.app/Contents/Java'
 RUSTC   = '/usr/local/bin/rustc'
-LLC     = '/usr/local/Cellar/llvm35-with-arm/3.5.0/bin/llc-3.5'
+LLC     = '/usr/local/Cellar/llvm/3.5.1/bin/llc'
 
 PORT = ENV['ARDUINO_DUE_PORT'] || "tty.usbmodemfd1421"
 

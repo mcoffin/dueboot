@@ -1,5 +1,6 @@
 #![feature(asm)]
 #![feature(lang_items)]
+#![feature(no_std)]
 
 #![no_std]
 
