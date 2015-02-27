@@ -35,7 +35,10 @@ clean:
 	rm *.ll *.ll.1 *.s *.o *.elf *.bin *.rlib
 
 $(CORE_LIB): $(CORE_SRC)
-	$(RUSTC) $(RUSTC_FLAGS) --emit=llvm-ir,link $(CORE_SRC)
+	$(RUSTC) $(RUSTC_FLAGS) --emit=link $(CORE_SRC)
+
+core.ll: $(CORE_SRC)
+	$(RUSTC) $(RUSTC_FLAGS) --emit=llvm-ir $(CORE_SRC)
 
 %.s: %.ll
 	sed -i .1 's/$(RUSTC_TARGET)/$(TARGET)/g' $<
