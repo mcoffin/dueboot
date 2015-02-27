@@ -1,6 +1,6 @@
 ARDUINO = '/Applications/Arduino.app/Contents/Java'
 RUSTC   = '/usr/local/bin/rustc'
-LLC     = '/usr/local/Cellar/llvm/3.5.1/bin/llc'
+LLC     = '/Users/mcoffin/workspace/rust/build/x86_64-apple-darwin/llvm/Release+Asserts/bin/llc'
 
 PORT = ENV['ARDUINO_DUE_PORT'] || "tty.usbmodemfd1421"
 
