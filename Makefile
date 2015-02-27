@@ -37,7 +37,7 @@ flash: boot.bin
 	$(ARDUINO)/hardware/tools/bossac -U false -e -w -v -b $< -R
 
 clean:
-	rm *.ll *.ll.1 *.s *.o *.elf *.bin *.rlib *.a
+	rm *.ll *.ll.1 *.s *.o *.elf *.bin *.rlib *.a $(ARDUINO_OBJS)
 
 $(CORE_LIB): $(CORE_SRC)
 	$(RUSTC) $(RUSTC_FLAGS) --emit=link $(CORE_SRC)
