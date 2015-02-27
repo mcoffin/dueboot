@@ -4,7 +4,7 @@ LLC     = '/Users/mcoffin/workspace/rust/build/x86_64-apple-darwin/llvm/Release+
 
 PORT = ENV['ARDUINO_DUE_PORT'] || "tty.usbmodemfd1421"
 
-RUST_SRC = 'core.rs'
+RUST_SRC = 'main.rs'
 
 # ---------------------------------------------------------------
 # Normally you shouldn't need to change anything below this line!
@@ -70,7 +70,7 @@ end
 directory 'output'
 
 file 'output/core.s' => [RUST_SRC, 'arduino.rs', 'output'] do
-  sh "#{RUSTC} --target arm-unknown-linux-gnueabihf --crate-type=lib --emit=llvm-ir -C no-stack-check -o output/main.ll -A non-upper-case-globals -A unused-imports -A dead-code -A non-snake-case -v #{RUST_SRC}"
+  sh "#{RUSTC} --target arm-unknown-linux-gnueabihf --crate-type=lib --extern core=/Users/mcoffin/workspace/rust/src/libcore --emit=llvm-ir -C no-stack-check -o output/main.ll -A non-upper-case-globals -A unused-imports -A dead-code -A non-snake-case -v #{RUST_SRC}"
   sh "sed -i .1 's/arm-unknown-linux-gnueabihf/arm-none-eabi/g' output/main.ll"
   # This prevents an error: invalid use of function-only attribute
   sh "sed -i .1 's/nocapture readonly/nocapture/g' output/main.ll"

@@ -1,1 +1,5 @@
 output/
+*.ll
+*.o
+*.s
+*.rlib

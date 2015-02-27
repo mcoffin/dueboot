@@ -81,7 +81,7 @@ pub fn interrupts() {
 }
 
 #[inline(always)]
-pub fn noInterrupts() {
+pub fn no_interrupts() {
 	unsafe {
 		asm!("CPSID i");
 	}
