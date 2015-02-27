@@ -29,10 +29,15 @@ CFLAGS=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-in
 
 CXXFLAGS=$(CFLAGS) -fno-rtti -fno-exceptions
 
+LDFLAGS=-Os -Wl,--gc-sections -mcpu=cortex-m3 -T$(ARDUINO)/hardware/arduino/sam/variants/arduino_due_x/linker_scripts/gcc/flash.ld -lm -lgcc -mthumb -Wl,--cref -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group
+
 all: boot.bin
 
+flash: boot.bin
+	$(ARDUINO)/hardware/tools/bossac -U false -e -w -v -b $< -R
+
 clean:
-	rm *.ll *.ll.1 *.s *.o *.elf *.bin *.rlib
+	rm *.ll *.ll.1 *.s *.o *.elf *.bin *.rlib *.a
 
 $(CORE_LIB): $(CORE_SRC)
 	$(RUSTC) $(RUSTC_FLAGS) --emit=link $(CORE_SRC)
@@ -50,8 +55,8 @@ core.ll: $(CORE_SRC)
 %.o: %.s
 	$(CC) $(CFLAGS) $< -o $@
 
-boot.elf: $(CORE_LIB) $(CRATE_FILES) arduino.a
-	$(CXX) $(LDFLAGS) $(CRATE_FILES) arduino.a -o $@
+boot.elf: $(CORE_LIB) $(CRATE_FILES) arduino.a $(ARDUINO)/hardware/arduino/sam/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a
+	$(CXX) $(LDFLAGS) $(CRATE_FILES) arduino.a $(ARDUINO)/hardware/arduino/sam/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a -Wl,--end-group -o $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

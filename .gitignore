@@ -1,5 +1,8 @@
 output/
-*.ll
+*.ll*
+*.a
+*.bin
+*.elf
 *.o
 *.s
 *.rlib
