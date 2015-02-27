@@ -1,24 +1,45 @@
-dueboot
-=======
+# dueboot
 
-Based on https://github.com/neykov/armboot, and is a template for Arduino Due projects
+Based on https://github.com/neykov/armboot, and is a template for Arduino Due projects.
 
-Compiling
----------
+## Compiling
 
-Modify the Rakefile with your paths and ports, and then "rake burn" to upload to the Arduino.
+Modify the `Makefile` with the following information:
+- Location of your Arduino installation 
+- Location of your `rustc` executable
+- Location of the `llc` used by `rustc`. NOTE: Using external LLVM = wierdness
+- Location of the source of Rust's `libcore`
+- Source file for your primary crate
 
+You can then run `make all` to build the binaries, or `make flash` to flash them
+to the arduino.
 
-Structure
----------
+## Editing
 
-    core.rs - sample program (blinks the led of the Arduino board)
-    arduino.rs - extern stubs for the core Arduino libraries
-    hardware/ - from a random Arduino IDE for OS X
+Some example code can be found in `main.rs`. Edit this file to customize your
+code.
 
+## Notes
 
-Credits
--------
+As this program does not link against Rust's `libstd` (for obvious reasons). You
+have to link against `libcore` manually to get some of the tools necessary for
+writing idiomatic Rust (like `Option<..>` and `Result<..>` types). The linking
+is handled manually by the Makefile, but you must still tell Rust to look for
+the metadata for `libcore` by including the following in your crates:
+
+````rust
+extern crate core;
+````
+
+`libstd` also re-exports a lot of `libcore` by default, so you'll notice that
+you will have to do something like the following quite often to improve quality
+of life for those used to a more normal Rust development environment.
+
+````rust
+use core::option::Option;
+use core::option::Option::{None, Some};
+````
+
+## Credits
 
   - armboot: https://github.com/neykov/armboot
-  - zero.rs: https://github.com/pcwalton/zero.rs
