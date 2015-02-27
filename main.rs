@@ -9,7 +9,10 @@
 
 extern crate core;
 
-use arduino::{init, delay, pinMode, digitalWrite, analogWrite, LOW, HIGH, OUTPUT};
+use core::option::Option;
+use core::option::Option::{Some, None};
+
+use arduino::{init, delay, pinMode, digitalWrite, digitalRead, analogRead, analogWrite, LOW, HIGH, OUTPUT, INPUT};
 mod arduino;
 
 #[lang = "stack_exhausted"]
@@ -34,25 +37,79 @@ fn panic_fmt(args: core::fmt::Arguments,
     }
 }
 
-pub struct LED {
+pub enum PinMode {
+    Input,
+    Output,
+}
+
+pub struct Pin {
     pin: u32,
 }
 
-impl LED {
-    pub fn new(pin: u32) -> LED {
-        let l = LED {
+impl Pin {
+    pub fn new(pin: u32, mode: PinMode) -> Self {
+        let l = Pin {
             pin: pin,
         };
-        l.set_pin_mode();
+        l.set_pin_mode(mode);
         l
     }
 
-    fn set_pin_mode(&self) {
-        pinMode(self.pin, OUTPUT);
+    pub fn set_pin_mode(&self, mode: PinMode) {
+        let m = match mode {
+            PinMode::Input => INPUT,
+            PinMode::Output => OUTPUT,
+        };
+        pinMode(self.pin, m);
     }
 
-    pub fn set(&self, val: u8) {
+    pub fn digital_write(&self, val: u8) {
         digitalWrite(self.pin, val);
+    }
+
+    pub fn digital_read(&self) -> i32 {
+        digitalRead(self.pin)
+    }
+
+    pub fn analog_write(&self, val: u32) {
+        analogWrite(self.pin, val);
+    }
+
+    pub fn analog_read(&self) -> i32 {
+        analogRead(self.pin)
+    }
+}
+
+pub struct PIDController {
+    pub kp: f64,
+    pub ki: f64,
+    pub kd: f64,
+    setpoint: Option<f64>,
+}
+
+impl PIDController {
+    pub fn new(p: f64, i: f64, d: f64) -> PIDController {
+        PIDController {
+            kp: p,
+            ki: i,
+            kd: d,
+            setpoint: None,
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.setpoint = None;
+    }
+
+    pub fn reset(&mut self, setpoint: f64) {
+        self.setpoint = Some(setpoint);
+    }
+
+    pub fn tick(&mut self, input: f64) -> Option<f64> {
+        match self.setpoint {
+            None => None,
+            Some(x) => Some(x),
+        }
     }
 }
 
@@ -66,23 +123,23 @@ static PWM_HIGH:u32 = 16;
 pub fn main() {
     init();
     delay(1);
-    let led = LED::new(LED_PIN);
-    led.set(LOW);
-    analogWrite(PWM, PWM_LOW);
+
+    let mut c = PIDController::new(1.0, 1.0, 1.0);
+
+    let led = Pin::new(LED_PIN, PinMode::Output);
+    led.digital_write(LOW);
 
     loop {
-        analogWrite(PWM, PWM_HIGH);
-        led.set(HIGH);
+        led.digital_write(HIGH);
         delay(100);
-        analogWrite(PWM, PWM_LOW);
-        led.set(LOW);
+        led.digital_write(LOW);
         delay(100);
 
-        analogWrite(PWM, PWM_HIGH);
-        led.set(HIGH);
+        led.digital_write(HIGH);
         delay(1000);
-        analogWrite(PWM, PWM_LOW);
-        led.set(LOW);
+        led.digital_write(LOW);
         delay(1000);
+
+        c.tick(0.0);
     }
 }
