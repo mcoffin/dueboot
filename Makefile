@@ -13,7 +13,7 @@ SRC=main.rs
 MAIN_CRATE_NAME=$(shell $(RUSTC) --print crate-name $(SRC))
 CORE_LIB=$(shell $(RUSTC) --print file-names $(CORE_SRC))
 
-CRATES=main core
+CRATES=$(MAIN_CRATE_NAME) core
 CRATE_FILES=$(CRATES:=.o)
 
 RUSTC_FLAGS=--target=$(RUSTC_TARGET) -A dead_code -A non_snake_case -C no-stack-check
