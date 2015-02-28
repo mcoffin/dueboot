@@ -11,6 +11,7 @@ extern crate core;
 
 use core::option::Option;
 use core::option::Option::{Some, None};
+use core::slice::SliceExt;
 
 use arduino::{init, delay, pinMode, digitalWrite, digitalRead, analogRead, analogWrite, LOW, HIGH, OUTPUT, INPUT};
 mod arduino;
@@ -80,66 +81,24 @@ impl Pin {
     }
 }
 
-pub struct PIDController {
-    pub kp: f64,
-    pub ki: f64,
-    pub kd: f64,
-    setpoint: Option<f64>,
-}
-
-impl PIDController {
-    pub fn new(p: f64, i: f64, d: f64) -> PIDController {
-        PIDController {
-            kp: p,
-            ki: i,
-            kd: d,
-            setpoint: None,
-        }
-    }
-
-    pub fn clear(&mut self) {
-        self.setpoint = None;
-    }
-
-    pub fn reset(&mut self, setpoint: f64) {
-        self.setpoint = Some(setpoint);
-    }
-
-    pub fn tick(&mut self, input: f64) -> Option<f64> {
-        match self.setpoint {
-            None => None,
-            Some(x) => Some(x),
-        }
-    }
-}
-
-static PWM:u32 = 2;
 static LED_PIN:u32 = 13;
-
-static PWM_LOW:u32 = 0;
-static PWM_HIGH:u32 = 16;
 
 #[no_mangle]
 pub fn main() {
     init();
     delay(1);
 
-    let mut c = PIDController::new(1.0, 1.0, 1.0);
-
     let led = Pin::new(LED_PIN, PinMode::Output);
     led.digital_write(LOW);
 
+    let delays: &[u32] = &[100, 1000];
+
     loop {
-        led.digital_write(HIGH);
-        delay(100);
-        led.digital_write(LOW);
-        delay(100);
-
-        led.digital_write(HIGH);
-        delay(1000);
-        led.digital_write(LOW);
-        delay(1000);
-
-        c.tick(0.0);
+        for &d in delays.iter() {
+            led.digital_write(HIGH);
+            delay(d);
+            led.digital_write(LOW);
+            delay(d);
+        }
     }
 }
