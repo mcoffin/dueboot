@@ -9,12 +9,12 @@
 
 extern crate core;
 
-use core::option::Option;
-use core::option::Option::{Some, None};
 use core::slice::SliceExt;
 
 use arduino::{init, delay, pinMode, digitalWrite, digitalRead, analogRead, analogWrite, LOW, HIGH, OUTPUT, INPUT};
 mod arduino;
+
+mod pid;
 
 #[lang = "stack_exhausted"]
 extern fn stack_exhausted() {}
@@ -93,7 +93,15 @@ pub fn main() {
 
     let delays: &[u32] = &[100, 1000];
 
+    let mut pid_input: f32 = 0.0;
+    let mut pid_output: f32 = 0.0;
+    let mut c = pid::PIDController::new(&mut pid_input, &mut pid_output,
+                                        1.0, 1.0, 1.0,
+                                        0.0, 1.0,
+                                        100);
+
     loop {
+        c.compute();
         for &d in delays.iter() {
             led.digital_write(HIGH);
             delay(d);
