@@ -106,9 +106,7 @@ impl<'a, 'b> PIDController<'a, 'b> {
             self.last_input = *self.input;
             self.last_sample_time = millis();
 
-            enforce_limit(&mut output,
-                         self.min_out, self.max_out);
-            *self.output = output;
+            *self.output = limited!(output, self.min_out, self.max_out);
         }
     }
 }
