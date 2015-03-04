@@ -1,22 +1,11 @@
 use core::cmp::PartialOrd;
-use core::marker::Copy;
 use core::default::Default;
-use super::arduino::{millis};
+use core::ops::{Add, Sub, Mul, Div};
+use core::marker::Copy;
+use core::option::Option;
+use core::option::Option::{None, Some};
 
-pub struct PIDController<'a, 'b> {
-    pub output: &'a mut f32,
-    pub input: &'b mut f32,
-    kp: f32,
-    ki: f32,
-    kd: f32,
-    pub setpoint: f32,
-    pub min_out: f32,
-    pub max_out: f32,
-    sample_time: u32,
-    last_sample_time: u32,
-    integral_term: f32,
-    last_input: f32,
-}
+use super::arduino::millis;
 
 macro_rules! limited {
     ($x:expr, $min:expr, $max:expr) => (
@@ -30,18 +19,27 @@ macro_rules! limited {
     );
 }
 
-fn enforce_limit<T: PartialOrd + Copy>(a: &mut T, min: T, max: T) {
-    *a = limited!(*a, min, max);
+pub struct PIDController<T> {
+    kp: T,
+    ki: T,
+    kd: T,
+    pub setpoint: T,
+    pub min_out: T,
+    pub max_out: T,
+    sample_time: u32,
+    last_sample_time: u32,
+    integral_term: T,
+    last_input: T,
 }
 
-impl<'a, 'b> PIDController<'a, 'b> {
-    pub fn new(input: &'b mut f32, output: &'a mut f32,
-               p: f32, i: f32, d: f32,
-               min: f32, max: f32,
+impl<T> PIDController<T> where T: Add<Output=T> + Sub<Output=T> + 
+    Div<f32, Output=T> + Div<Output=T> +
+    Mul<f32, Output=T> + Mul<Output=T> +
+    Copy + PartialOrd + Default {
+    pub fn new(p: T, i: T, d: T,
+               min: T, max: T,
                sample_time: u32) -> Self {
         let mut c = PIDController {
-            output: output,
-            input: input,
             kp: p,
             ki: i,
             kd: d,
@@ -50,29 +48,14 @@ impl<'a, 'b> PIDController<'a, 'b> {
             max_out: max,
             sample_time: sample_time,
             last_sample_time: 0,
-            integral_term: 0.0,
-            last_input: 0.0,
+            integral_term: Default::default(),
+            last_input: Default::default(),
         };
-        c.reset();
+        c.set_tuning_params(p, i, d);
         c
     }
 
-    pub fn reset(&mut self) {
-        self.integral_term = self.ki * *self.output;
-        self.last_input = *self.input;
-        enforce_limit(&mut self.integral_term,
-                      self.min_out, self.max_out);
-    }
-
-    fn error(&self) -> f32 {
-        self.setpoint - *self.input
-    }
-
-    fn since_sample(&self) -> u32 {
-        millis() - self.last_sample_time
-    }
-
-    pub fn set_tuning_params(&mut self, p: f32, i: f32, d: f32) {
+    pub fn set_tuning_params(&mut self, p: T, i: T, d: T) {
         self.kp = p;
         self.ki = i * (self.sample_time as f32);
         self.kd = d / (self.sample_time as f32);
@@ -87,26 +70,30 @@ impl<'a, 'b> PIDController<'a, 'b> {
         self.set_tuning_params(p, i, d);
     }
 
-    pub fn compute(&mut self) {
+    fn since_sample(&self) -> u32 {
+        millis() - self.last_sample_time
+    }
+
+    pub fn compute(&mut self, input: T) -> Option<T> {
         if self.since_sample() < self.sample_time {
-            return;
+            None
         } else {
-            let error = self.error();
+            let error = self.setpoint - input;
 
-            let d_input = self.last_input - *self.input;
-            self.integral_term += self.ki * error;
+            let d_input = self.last_input - input;
+            self.integral_term = self.integral_term + (self.ki * error);
 
-            enforce_limit(&mut self.integral_term,
-                          self.min_out, self.max_out);
+            self.integral_term = limited!(self.integral_term,
+                                          self.min_out, self.max_out);
 
-            let mut output = (self.kp * error) + 
-                self.integral_term - 
+            let output = (self.kp * error) +
+                self.integral_term -
                 (self.kd * d_input);
 
-            self.last_input = *self.input;
+            self.last_input = input;
             self.last_sample_time = millis();
 
-            *self.output = limited!(output, self.min_out, self.max_out);
+            Some(limited!(output, self.min_out, self.max_out))
         }
     }
 }

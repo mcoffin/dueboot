@@ -93,15 +93,12 @@ pub fn main() {
 
     let delays: &[u32] = &[100, 1000];
 
-    let mut pid_input: f32 = 0.0;
-    let mut pid_output: f32 = 0.0;
-    let mut c = pid::PIDController::new(&mut pid_input, &mut pid_output,
-                                        1.0, 1.0, 1.0,
+    let mut c: pid::PIDController<f32> = pid::PIDController::new(1.0, 1.0, 1.0,
                                         0.0, 1.0,
                                         100);
 
     loop {
-        c.compute();
+        c.compute(1.0);
         for &d in delays.iter() {
             led.digital_write(HIGH);
             delay(d);
