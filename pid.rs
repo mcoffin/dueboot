@@ -19,10 +19,10 @@ macro_rules! limited {
     );
 }
 
-pub struct PIDController<T> {
-    kp: T,
-    ki: T,
-    kd: T,
+pub struct PIDController<T, S> {
+    kp: S,
+    ki: S,
+    kd: S,
     pub setpoint: T,
     pub min_out: T,
     pub max_out: T,
@@ -32,11 +32,12 @@ pub struct PIDController<T> {
     last_input: T,
 }
 
-impl<T> PIDController<T> where T: Add<Output=T> + Sub<Output=T> + 
-    Div<f32, Output=T> + Div<Output=T> +
-    Mul<f32, Output=T> + Mul<Output=T> +
-    Copy + PartialOrd + Default {
-    pub fn new(p: T, i: T, d: T,
+impl<T, S> PIDController<T, S> where T: Add<Output=T> + Sub<Output=T> + 
+    Mul<S, Output=T> + Div<S, Output=T> +
+    Copy + PartialOrd + Default,
+    S: Copy + PartialOrd + Default +
+    Mul<f32, Output=S> + Div<f32, Output=S> {
+    pub fn new(p: S, i: S, d: S,
                min: T, max: T,
                sample_time: u32) -> Self {
         let mut c = PIDController {
@@ -55,7 +56,7 @@ impl<T> PIDController<T> where T: Add<Output=T> + Sub<Output=T> +
         c
     }
 
-    pub fn set_tuning_params(&mut self, p: T, i: T, d: T) {
+    pub fn set_tuning_params(&mut self, p: S, i: S, d: S) {
         self.kp = p;
         self.ki = i * (self.sample_time as f32);
         self.kd = d / (self.sample_time as f32);
@@ -81,14 +82,14 @@ impl<T> PIDController<T> where T: Add<Output=T> + Sub<Output=T> +
             let error = self.setpoint - input;
 
             let d_input = self.last_input - input;
-            self.integral_term = self.integral_term + (self.ki * error);
+            self.integral_term = self.integral_term + (error * self.ki);
 
             self.integral_term = limited!(self.integral_term,
                                           self.min_out, self.max_out);
 
-            let output = (self.kp * error) +
+            let output = (error * self.kp) +
                 self.integral_term -
-                (self.kd * d_input);
+                (d_input * self.kd);
 
             self.last_input = input;
             self.last_sample_time = millis();

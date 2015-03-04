@@ -93,7 +93,7 @@ pub fn main() {
 
     let delays: &[u32] = &[100, 1000];
 
-    let mut c: pid::PIDController<f32> = pid::PIDController::new(1.0, 1.0, 1.0,
+    let mut c: pid::PIDController<f32, f32> = pid::PIDController::new(1.0, 1.0, 1.0,
                                         0.0, 1.0,
                                         100);
 
