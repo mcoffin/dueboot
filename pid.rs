@@ -37,6 +37,7 @@ impl<T, S> PIDController<T, S> where T: Add<Output=T> + Sub<Output=T> +
     Copy + PartialOrd + Default,
     S: Copy + PartialOrd + Default +
     Mul<f32, Output=S> + Div<f32, Output=S> {
+
     pub fn new(p: S, i: S, d: S,
                min: T, max: T,
                sample_time: u32) -> Self {
